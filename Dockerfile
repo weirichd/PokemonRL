@@ -15,7 +15,10 @@ USER root
 
 COPY requirements.txt .
 
-RUN apt-get update && apt-get install -y graphviz
+RUN apt-get update && apt-get install -y \
+    graphviz \
+    libsdl2-2.0-0
+
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
 # Start Jupyter Notebook when container runs

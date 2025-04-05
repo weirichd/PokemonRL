@@ -1,7 +1,8 @@
 # Name of the Docker image and container
-IMAGE_NAME = my-tensorflow-gpu-jupyter
-CONTAINER_NAME = tensorflow-gpu-jupyter-container
+IMAGE_NAME = pokemon-rl
+CONTAINER_NAME = pokemon-rl-container
 TF_VERSION = 2.17.0  # Change this to update TensorFlow
+
 
 # Default target: Build and check GPU availability
 .PHONY: all 
@@ -20,13 +21,17 @@ run: check-gpu
 	docker run --gpus all -it --rm --name $(CONTAINER_NAME) -p 8888:8888 \
 		-v $(shell pwd):/workspace $(IMAGE_NAME)
 
-# Run arbitrary commands inside the container
-.PHONY: run-cmd
-run-cmd: check-gpu
-	@echo "Running command inside container: $(filter-out $@,$(MAKECMDGOALS))..."
+script: check-gpu
+	@echo "Running Python Script."
 	docker run --gpus all -it --rm --name $(CONTAINER_NAME) \
-		-v $(shell pwd):/workspace $(IMAGE_NAME) $(filter-out $@,$(MAKECMDGOALS))
+		-v $(shell pwd):/workspace $(IMAGE_NAME) python main.py
 
+
+python:
+	docker run --gpus all -it --rm --name $(CONTAINER_NAME) \
+		-v $(shell pwd):/workspace $(IMAGE_NAME) ipython
+
+	
 # Rebuild the image (force update)
 .PHONY: rebuild
 rebuild:
@@ -60,8 +65,4 @@ check-gpu:
 update-tensorflow:
 	@echo "Updating TensorFlow to version $(TF_VERSION)..."
 	docker build --no-cache --build-arg TF_VERSION=$(TF_VERSION) -t $(IMAGE_NAME) .
-
-# Allow passing additional arguments to run-cmd
-%:
-	@:
 
